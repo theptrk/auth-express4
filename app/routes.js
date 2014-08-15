@@ -17,7 +17,11 @@ module.exports = function(app, passport){
     res.render('signup.ejs', { message: req.flash('signupMessage') });
   });
 
-  // app.post('/signup', fn)
+  app.post('/signup', passport.authenticate('local-signup', {
+    sucessRedirect: '/profile', // this could instead be a callback
+    failureRedirect: '/signup',
+    failureFlash: true // allow flash messages
+  }));
 
   // PROFILE
   // we use our logged in middleware here
