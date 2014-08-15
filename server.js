@@ -16,7 +16,7 @@ var configDB = require('./config/database.js');
 // configuration
 mongoose.connect(configDB.url); // connect to our db
 
-// require('./config/passport')(passport); // pass passport for configuration
+require('./config/passport')(passport); // pass passport for configuration
 
 // set up our express app
 app.use(morgan('dev')); // log every request to the console
@@ -26,7 +26,7 @@ app.use(bodyParser()); // get info from html forms
 app.set('view engine', 'ejs'); // choose ejs for templates
 
 // required for passport
-app.use(session({secret: 'iauthauthauth'}));
+app.use(session({ secret: 'iloveauthauthauth' }));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
