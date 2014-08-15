@@ -26,7 +26,7 @@ app.use(bodyParser()); // get info from html forms
 app.set('view engine', 'ejs'); // choose ejs for templates
 
 // required for passport
-app.use(session({secret: 'ilovekalekalekale'}));
+app.use(session({secret: 'iauthauthauth'}));
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(flash()); // use connect-flash for flash messages stored in session
