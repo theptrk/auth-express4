@@ -5,23 +5,27 @@ module.exports = function(app, passport){
   });
 
   // LOGIN
-  app.get('/login', function(req, res){
-    // we will create loginMessage in our passport config
-    res.render('login.ejs', { message: req.flash('loginMessage')});
-  });
-
-  // app.post('/login', fn)
+  app.route('/login')
+    .get(function(req, res){
+      res.render('login.ejs', { message: req.flash('loginMessage')});
+    })
+    .post(passport.authenticate('local-login', {
+      successRedirect : '/profile',
+      failureRedirect : '/login',
+      failureFlash: true
+    }));
 
   // SIGNUP
-  app.get('/signup', function(req, res){
-    res.render('signup.ejs', { message: req.flash('signupMessage') });
-  });
+  app.route('/signup')
+    .get(function(req, res){
+      res.render('signup.ejs', { message: req.flash('signupMessage') });
+    })
 
-  app.post('/signup', passport.authenticate('local-signup', {
-    successRedirect: '/profile', // this could instead be a callback
-    failureRedirect: '/signup',
-    failureFlash: true // allow flash messages
-  }));
+    .post(passport.authenticate('local-signup', {
+      successRedirect: '/profile', // this could instead be a callback
+      failureRedirect: '/signup',
+      failureFlash: true // allow flash messages
+    }));
 
   // PROFILE
   // we use our logged in middleware here
