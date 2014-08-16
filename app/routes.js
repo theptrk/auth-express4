@@ -18,7 +18,7 @@ module.exports = function(app, passport){
   });
 
   app.post('/signup', passport.authenticate('local-signup', {
-    sucessRedirect: '/profile', // this could instead be a callback
+    successRedirect: '/profile', // this could instead be a callback
     failureRedirect: '/signup',
     failureFlash: true // allow flash messages
   }));
