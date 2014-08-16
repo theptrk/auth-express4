@@ -29,16 +29,18 @@ module.exports = function(app, passport){
 
   // PROFILE
   // we use our logged in middleware here
-  app.get('/profile', isLoggedIn, function(req, res){
-    res.render('profile.ejs', {
-      user : req.user // get the user out of session and pass to template
+  app.route('/profile')
+    .get(isLoggedIn, function(req, res){
+      res.render('profile.ejs', {
+        user : req.user // get the user out of session and pass to template
+      });
     });
-  });
 
-  app.get('/logout', function(req, res){
-    req.logout(); // provided by passport
-    res.redirect('/');
-  });
+  app.route('/logout')
+    .get(function(req, res){
+      req.logout(); // provided by passport
+      res.redirect('/');
+    });
 };
 
 // middleware to make sure user is logged in
