@@ -28,19 +28,29 @@ module.exports = function(app, passport){
     }));
 
   // PROFILE
-  // we use our logged in middleware here
   app.route('/profile')
+    // we use our logged in middleware here
     .get(isLoggedIn, function(req, res){
       res.render('profile.ejs', {
         user : req.user // get the user out of session and pass to template
       });
     });
 
-  app.route('/logout')
-    .get(function(req, res){
-      req.logout(); // provided by passport
-      res.redirect('/');
-    });
+  // FACEBOOK ROUTES
+  app.get('/auth/facebook', passport.authenticate('facebook', { scope : 'email' }));
+
+  // facebook redirect
+  app.get('/auth/facebook/callback',
+      passport.authenticate('facebook', {
+        successRedirect : '/profile',
+        failureRedirect : '/'
+      }));
+
+  app.get('/logout', function(req, res){
+    req.logout(); // provided by passport
+    res.redirect('/');
+  });
+
 };
 
 // middleware to make sure user is logged in
