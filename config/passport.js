@@ -36,7 +36,6 @@ module.exports = function(passport){
       passReqToCallback : true // allows us to pass back the entire request to the callback
     },
     function(req, email, password, done){
-
       // asynchronous
       // User.findOne wont fire unless data is sent back
       process.nextTick(function(){
@@ -50,7 +49,6 @@ module.exports = function(passport){
             return done(null, false, req.flash('signupMessage', 'That email is already taken'));
           } else {
             var newUser = new User();
-
             newUser.local.email = email;
             newUser.local.password = newUser.generateHash(password);
 
@@ -92,37 +90,67 @@ module.exports = function(passport){
       clientID     : configAuth.facebookAuth.clientID,
       clientSecret : configAuth.facebookAuth.clientSecret,
       callbackURL  : configAuth.facebookAuth.callbackURL,
+      passReqToCallback : true,
       profileFields : ['id', 'name', 'picture.type(large)', 'emails', 'displayName', 'gender']
     },
     // facebook will send back the token and profile
-    function(token, refreshToken, profile, done){
+    function(req, token, refreshToken, profile, done){
 
       process.nextTick(function(){
         console.log(profile);
-        User.findOne({ 'facebook.id' : profile.id }, function(err, user){
+        // check if the user is already logged in
+        if (!req.isAuthenticated()) {
+          User.findOne({ 'facebook.id' : profile.id }, function(err, user){
+            // TODO weird bug if you try to connect local but a facebook
+            // profile already exists
+            if (err)
+              return done(err);
 
-          if (err)
-            return done(err);
+            if (user){
+              if (!user.facebook.token){
+                user.facebook.token = token;
+                user.save(function(err){
+                  if (err)
+                    throw err;
+                  return done(null, user);
+                });
+              }
+              return done(null, user); // return user if found note: opposite order of local
+            }
 
-          if (user){
-            return done(null, user); // return user if found note: opposite order of local
-          }
+            var newUser = new User();
+            newUser.facebook.id = profile.id;
+            newUser.facebook.token = token;
+            newUser.facebook.name = profile.name.givenName + ' ' + profile.name.familyName;
+            newUser.facebook.email = profile.emails[0].value;
+            newUser.facebook.photos = profile.photos[0].value;
+            newUser.facebook.gender = profile.gender;
 
-          var newUser = new User();
-          newUser.facebook.id = profile.id;
-          newUser.facebook.token = token;
-          newUser.facebook.name = profile.name.givenName + ' ' + profile.name.familyName;
-          newUser.facebook.email = profile.emails[0].value;
-          newUser.facebook.photos = profile.photos[0].value;
-          newUser.facebook.gender = profile.gender;
-
-          newUser.save(function(err){
-            if(err)
-              throw err;
-
-            return done(null, newUser);
+            newUser.save(function(err){
+              if(err)
+                throw err;
+              return done(null, newUser);
+            });
           });
-        });
+        } else {
+          // user already exists and we will link the fb account
+          var user = req.user;
+
+          //TODO Definitely could be factored out into a save facebook function
+          user.facebook.id = profile.id;
+          user.facebook.token = token;
+          user.facebook.name = profile.name.givenName + ' ' + profile.name.familyName;
+          user.facebook.email = profile.emails[0].value;
+          user.facebook.photos = profile.photos[0].value;
+          user.facebook.gender = profile.gender;
+
+          user.save(function(err){
+            if (err)
+              throw err;
+            return done(null, user);
+          });
+        }
       });
-    }));
+    }
+  ));
 };
