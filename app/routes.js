@@ -1,7 +1,11 @@
+var User = require('./models/user');
+
 module.exports = function(app, passport){
   // HOME PAGE
   app.get('/', function(req, res){
-    res.render('index.ejs');
+    User.find(function(err, users) {
+      res.render('index.ejs', { users: users});
+    });
   });
 
   // LOGIN
